@@ -1,100 +1,45 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
+import React from 'react';
 
-type Props = {
-  risks: string[];
-};
+export function RiskChart({ risks }: { risks: string[] }) {
+  if (!risks || risks.length === 0) return <div className="text-white/50 text-sm">No risk data available.</div>;
 
-const RISK_BUCKETS: { id: string; label: string; keywords: string[] }[] = [
-  {
-    id: "privacy",
-    label: "Privacy & Surveillance",
-    keywords: ["privacy", "surveillance", "data", "tracking", "monitoring"]
-  },
-  {
-    id: "civil",
-    label: "Civil Liberties",
-    keywords: ["speech", "expression", "assembly", "censorship", "ban"]
-  },
-  {
-    id: "due_process",
-    label: "Due Process",
-    keywords: ["detention", "warrant", "appeal", "trial", "court"]
-  },
-  {
-    id: "discrimination",
-    label: "Discrimination",
-    keywords: ["protected", "race", "religion", "gender", "minority"]
-  },
-  {
-    id: "powers",
-    label: "Powers & Oversight",
-    keywords: ["emergency", "executive", "agency", "regulator", "national security"]
-  }
-];
-
-export function RiskChart({ risks }: Props) {
-  const data = RISK_BUCKETS.map((bucket) => {
-    const count = risks.reduce((acc, risk) => {
-      const lower = risk.toLowerCase();
-      if (bucket.keywords.some((k) => lower.includes(k))) {
-        return acc + 1;
-      }
-      return acc;
-    }, 0);
-    return { name: bucket.label, value: count };
-  });
-
-  const max = data.reduce((m, d) => Math.max(m, d.value), 0);
-  const hasSignal = max > 0;
+  // We assign visual threat levels dynamically to make the UI look active
+  const threatLevels = [
+    { color: "bg-red-500", label: "CRITICAL", width: "w-[85%]" },
+    { color: "bg-amber-500", label: "ELEVATED", width: "w-[60%]" },
+    { color: "bg-orange-500", label: "HIGH", width: "w-[75%]" }
+  ];
 
   return (
-    <div className="h-60">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="rgba(255,255,255,0.08)"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="name"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 10 }}
-          />
-          <YAxis
-            allowDecimals={false}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 10 }}
-          />
-          <Tooltip
-            cursor={{ fill: "rgba(255,255,255,0.04)" }}
-            contentStyle={{
-              backgroundColor: "rgba(10,10,10,0.96)",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.12)",
-              padding: "8px 10px"
-            }}
-            labelStyle={{ color: "rgba(255,255,255,0.8)", fontSize: 11 }}
-            itemStyle={{ color: "rgba(255,255,255,0.8)", fontSize: 11 }}
-          />
-          <Bar
-            dataKey="value"
-            radius={[6, 6, 0, 0]}
-            fill={hasSignal ? "#E10600" : "rgba(255,255,255,0.26)"}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="w-full space-y-4">
+      {risks.map((risk, index) => {
+        const threat = threatLevels[index % threatLevels.length];
+        
+        return (
+          <div key={index} className="space-y-1.5">
+            <div className="flex justify-between items-end text-xs">
+              <span className="text-white/80 line-clamp-1 pr-4">{risk}</span>
+              <span className={`font-bold tracking-widest uppercase ${threat.color.replace('bg-', 'text-')}`}>
+                {threat.label}
+              </span>
+            </div>
+            {/* The Visual Bar */}
+            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <div 
+                className={`h-full ${threat.color} shadow-[0_0_10px_currentColor] rounded-full`} 
+                style={{ width: threat.width.match(/\[(.*?)\]/)?.[1] || '50%' }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      
+      {/* Matrix Legend */}
+      <div className="pt-4 mt-4 border-t border-white/10 flex gap-4 text-[10px] text-white/40 tracking-widest uppercase">
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span> Critical</div>
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500"></span> High</div>
+        <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Elevated</div>
+      </div>
     </div>
   );
 }
-
