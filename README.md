@@ -2,7 +2,6 @@
 
 ![PolisAI Version](https://img.shields.io/badge/Version-4.0%20Ultimate-amber.svg)
 ![Tech Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20FastAPI%20%7C%20Llama--3-blue.svg)
-![Status](https://img.shields.io/badge/Status-HackIndia%20Spark%204%20Ready-success.svg)
 
 **Predictive GovTech and Constitutional Risk Analysis for 1.4 Billion Citizens.**
 
