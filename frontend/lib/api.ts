@@ -9,8 +9,7 @@ export type AnalyzeResponse = {
 };
 
 export async function analyzePolicy(policy: string): Promise<AnalyzeResponse> {
-  const base =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
+  const base = "https://ai-for-governance.onrender.com";
 
   const res = await fetch(`${base}/analyze`, {
     method: "POST",
