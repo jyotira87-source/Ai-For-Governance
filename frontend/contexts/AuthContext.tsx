@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      console.log("Attempting login with:", { email, API_URL });
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,11 +44,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Login failed");
+        const errText = await res.text();
+        console.error("Login failed - Status:", res.status, "Response:", errText);
+        let detail = "Login failed";
+        try {
+          const err = JSON.parse(errText);
+          detail = err.detail || detail;
+        } catch {}
+        throw new Error(detail);
       }
 
       const data = await res.json();
+      console.log("Login successful");
       setToken(data.access_token);
       localStorage.setItem("polisai:token", data.access_token);
 
@@ -59,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       localStorage.setItem("polisai:user", JSON.stringify(userData));
     } catch (e: any) {
+      console.error("Auth error:", e.message);
       setError(e.message);
       throw e;
     } finally {
@@ -70,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      console.log("Attempting registration with:", { email, username, API_URL });
       const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,13 +87,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Registration failed");
+        const errText = await res.text();
+        console.error("Registration failed - Status:", res.status, "Response:", errText);
+        let detail = "Registration failed";
+        try {
+          const err = JSON.parse(errText);
+          detail = err.detail || detail;
+        } catch {}
+        throw new Error(detail);
       }
 
+      console.log("Registration successful, attempting auto-login");
       // Auto-login after registration
       await login(email, password);
     } catch (e: any) {
+      console.error("Auth error:", e.message);
       setError(e.message);
       throw e;
     } finally {
