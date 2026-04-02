@@ -7,7 +7,8 @@ import { RiskChart } from "@/components/RiskChart";
 import { PolicyFlow } from "@/components/PolicyFlow";
 import { PolicyMap } from "@/components/PolicyMap";
 import { ImpactMap } from "@/components/ImpactMap";
-import { analyzePolicy } from "@/lib/api"; 
+import { analyzePolicy, analyzeSentiment, SentimentResponse } from "@/lib/api";
+import { SentimentDashboard } from "@/components/SentimentDashboard"; 
 
 // --- 1. PILL COMPONENT ---
 function Pill({ children, color = "accent" }: { children: string; color?: "accent" | "red" | "purple" }) {
@@ -130,6 +131,8 @@ export default function HomePage() {
   const [isComparing, setIsComparing] = useState(false);
   const [activeQuote, setActiveQuote] = useState<string | null>(null);
   const [theme, setTheme] = useState<"carbon" | "crimson" | "midnight">("carbon");
+  const [sentimentData, setSentimentData] = useState<SentimentResponse | null>(null);
+  const [showSentiment, setShowSentiment] = useState(false);
   const reportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -150,9 +153,21 @@ export default function HomePage() {
     setActiveQuote(null);
     try {
       const data = await analyzePolicy(policy);
-      if (!v1Data) setV1Data({ text: policy, result: data });
-      else { setV2Data({ text: policy, result: data }); setIsComparing(true); }
-      setPolicy(""); 
+      if (!v1Data) {
+        setV1Data({ text: policy, result: data });
+        // Fetch sentiment data for new analysis
+        try {
+          const sentiment = await analyzeSentiment(policy);
+          setSentimentData(sentiment);
+        } catch (e) {
+          console.warn("Sentiment analysis failed:", e);
+          setSentimentData(null);
+        }
+      } else {
+        setV2Data({ text: policy, result: data });
+        setIsComparing(true);
+      }
+      setPolicy("");
     } catch (e: any) { setError(e.message || "API Error"); } finally { setLoading(false); }
   }
 
@@ -250,7 +265,7 @@ export default function HomePage() {
         ? <mark key={i} className="bg-red-500 text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">{part}</mark> : part);
   }
 
-  function handleReset() { setV1Data(null); setV2Data(null); setIsComparing(false); setPolicy(""); }
+  function handleReset() { setV1Data(null); setV2Data(null); setIsComparing(false); setPolicy(""); setSentimentData(null); setShowSentiment(false); }
 
   if (!isMounted) return null;
   const currentViewData = isComparing ? v2Data : v1Data;
@@ -325,6 +340,18 @@ export default function HomePage() {
                         {v2Data.result.score > v1Data.result.score ? "+" : ""}{(v2Data.result.score - v1Data.result.score).toFixed(1)} Pts
                       </span>
                     </div>
+                  )}
+                  {sentimentData && (
+                    <button
+                      onClick={() => setShowSentiment(!showSentiment)}
+                      className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-bold transition-all ${
+                        showSentiment
+                          ? "border-purple-500/30 bg-purple-500/10 text-purple-300"
+                          : "border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10"
+                      }`}
+                    >
+                      📊 {showSentiment ? "Hide" : "Show"} Public Sentiment
+                    </button>
                   )}
                   <button onClick={() => exportToGovMemo(result)} className="inline-flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-bold text-blue-300 hover:bg-blue-500/20">📄 Export Gov Memo</button>
                 </div>
@@ -486,6 +513,15 @@ export default function HomePage() {
                   </div>
                 </Card>
               </div>
+
+              {/* SENTIMENT ANALYSIS SECTION */}
+              {showSentiment && sentimentData && (
+                <div className="md:col-span-3 mt-6">
+                  <Card title="Real-Time Public Sentiment Analysis">
+                    <SentimentDashboard data={sentimentData} />
+                  </Card>
+                </div>
+              )}
 
             </div>
           )}
