@@ -109,7 +109,8 @@ export function NavigationHeader() {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition font-medium text-sm"
+                    aria-label="Logout from account"
+                    className="px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition font-medium text-sm focus:ring-2 focus:ring-red-400/50 focus:outline-none"
                   >
                     Logout
                   </button>

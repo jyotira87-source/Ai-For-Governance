@@ -11,6 +11,7 @@ import { PolicyMap } from "@/components/PolicyMap";
 import { ImpactMap } from "@/components/ImpactMap";
 import { SentimentDashboard } from "@/components/SentimentDashboard";
 import { QuickActions, mainPageActions } from "@/components/QuickActions";
+import { PredictiveAnalytics } from "@/components/PredictiveAnalytics";
 import { analyzePolicy, analyzeSentiment, SentimentResponse } from "@/lib/api"; 
 
 // --- 1. PILL COMPONENT ---
@@ -524,6 +525,11 @@ export default function HomePage() {
                     </div>
                   </div>
                 </Card>
+              </div>
+
+              {/* PREDICTIVE ANALYSIS SECTION */}
+              <div className="md:col-span-3 mt-6">
+                <PredictiveAnalytics score={result.score} friction={result.friction_score} />
               </div>
 
               {/* SENTIMENT ANALYSIS SECTION */}
