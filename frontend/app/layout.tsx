@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NavigationHeader } from "@/components/NavigationHeader";
+import { PageTransition } from "@/components/PageTransition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +19,10 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-background antialiased">
         <AuthProvider>
-          {children}
+          <NavigationHeader />
+          <PageTransition>
+            {children}
+          </PageTransition>
           <Analytics />
         </AuthProvider>
       </body>

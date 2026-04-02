@@ -4,9 +4,10 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
+import { QuickActions, dashboardActions } from "@/components/QuickActions";
 
 export default function DashboardPage() {
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -17,11 +18,6 @@ export default function DashboardPage() {
 
   if (!token || !user) return null;
 
-  const handleLogout = () => {
-    logout();
-    router.push("/auth");
-  };
-
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-background">
       <div className="noise absolute inset-0 -z-10" />
@@ -29,17 +25,9 @@ export default function DashboardPage() {
 
       <div className="mx-auto w-full max-w-6xl px-6 py-16">
         {/* Header */}
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h1 className="text-4xl font-bold text-white">Welcome, {user.full_name || user.username}!</h1>
-            <p className="text-white/50 mt-2">Your Policy Analysis Dashboard</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition font-semibold"
-          >
-            Logout
-          </button>
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-white">Welcome, {user.full_name || user.username}!</h1>
+          <p className="text-white/50 mt-2">Your Policy Analysis Dashboard</p>
         </div>
 
         {/* Quick Stats */}
@@ -59,7 +47,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Main CTA */}
-        <div className="glass rounded-3xl p-8 border border-white/10 text-center">
+        <div className="glass rounded-3xl p-8 border border-white/10 text-center mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">Ready to analyze a policy?</h2>
           <p className="text-white/60 mb-6">Start analyzing policies with AI-powered constitutional compliance checking</p>
           <button
@@ -69,6 +57,9 @@ export default function DashboardPage() {
             Go to Analysis Engine
           </button>
         </div>
+
+        {/* Quick Actions */}
+        <QuickActions actions={dashboardActions} />
 
         {/* User Info */}
         <div className="mt-12 glass rounded-2xl p-6 border border-white/10">

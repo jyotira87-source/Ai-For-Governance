@@ -9,8 +9,8 @@ import { RiskChart } from "@/components/RiskChart";
 import { PolicyFlow } from "@/components/PolicyFlow";
 import { PolicyMap } from "@/components/PolicyMap";
 import { ImpactMap } from "@/components/ImpactMap";
-import { analyzePolicy, analyzeSentiment, SentimentResponse } from "@/lib/api";
-import { SentimentDashboard } from "@/components/SentimentDashboard"; 
+import { SentimentDashboard } from "@/components/SentimentDashboard";
+import { QuickActions, mainPageActions } from "@/components/QuickActions"; 
 
 // --- 1. PILL COMPONENT ---
 function Pill({ children, color = "accent" }: { children: string; color?: "accent" | "red" | "purple" }) {
@@ -126,7 +126,7 @@ export default function HomePage() {
   const [policy, setPolicy] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { token, user, logout } = useAuth();
+  const { token, user } = useAuth();
   const router = useRouter();
   
   // A/B State & X-Ray
@@ -294,15 +294,6 @@ export default function HomePage() {
               <Pill color="purple">X-Ray Analysis</Pill>
               <Pill color="red">A/B Diff Engine</Pill>
             </div>
-            <button
-              onClick={() => {
-                logout();
-                router.push("/auth");
-              }}
-              className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-1 rounded-full backdrop-blur-md transition"
-            >
-              Logout
-            </button>
           </div>
 
           <div className="flex justify-between items-end">
@@ -546,6 +537,13 @@ export default function HomePage() {
             </div>
           )}
         </section>
+
+        {/* Quick Actions */}
+        {token && (
+          <section className="mt-16">
+            <QuickActions actions={mainPageActions} />
+          </section>
+        )}
 
       </div>
     </main>
