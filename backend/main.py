@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPBearer
+from starlette.requests import Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -92,8 +93,12 @@ app.add_middleware(
 security = HTTPBearer()
 
 # Dependency to get current user
-async def get_current_user(credentials: HTTPAuthCredentials = Depends(security), db: Session = Depends(get_db)) -> User:
-    token = credentials.credentials
+async def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or invalid authorization header")
+    
+    token = auth_header.replace("Bearer ", "")
     token_data = verify_token(token)
     if token_data is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
