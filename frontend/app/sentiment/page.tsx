@@ -69,37 +69,37 @@ export default function SentimentPage() {
         <div className="mb-8">
           <Card title="Policy Input">
             <div className="space-y-4">
-            <textarea
-              value={policy}
-              onChange={(e) => setPolicy(e.target.value)}
-              placeholder="Enter your policy proposal here..."
-              className="w-full h-32 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-              disabled={isAnalyzing}
-            />
+              <textarea
+                value={policy}
+                onChange={(e) => setPolicy(e.target.value)}
+                placeholder="Enter your policy proposal here..."
+                className="w-full h-32 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
+                disabled={isAnalyzing}
+              />
 
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
-            <button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !policy.trim()}
-              className="w-full sm:w-auto px-6 py-3 bg-accent hover:bg-accent/80 disabled:bg-white/20 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Spinner />
-                  <span>Analyzing Sentiment...</span>
-                </>
-              ) : (
-                <>
-                  <span>📊</span>
-                  <span>Analyze Sentiment</span>
-                </>
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
               )}
-            </button>
+
+              <button
+                onClick={handleAnalyze}
+                disabled={isAnalyzing || !policy.trim()}
+                className="w-full sm:w-auto px-6 py-3 bg-accent hover:bg-accent/80 disabled:bg-white/20 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Spinner />
+                    <span>Analyzing Sentiment...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📊</span>
+                    <span>Analyze Sentiment</span>
+                  </>
+                )}
+              </button>
             </div>
           </Card>
         </div>
