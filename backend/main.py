@@ -20,6 +20,8 @@ from auth import (
     verify_token, UserCreate, UserLogin, Token, UserResponse,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
+# ML Model imports
+from ml_model import ml_predictor, PolicyDomain
 
 # 1. Advanced Setup: Configure Professional Logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -206,6 +208,22 @@ async def analyze_policy(payload: PolicyRequest):
         if not valid_data:
             logger.error(f"Data structure mismatch. Raw AI Output: {raw_content}")
             raise ValueError("AI response did not contain the required fields.")
+
+        # INTEGRATED ML PREDICTIONS
+        governance_score = valid_data.get("score", 50)
+        friction_score = valid_data.get("friction_score", 50)
+        
+        # Get ML predictions using ensemble model
+        ml_predictions = ml_predictor.full_prediction(
+            governance_score=governance_score,
+            friction_score=friction_score,
+            domain=PolicyDomain.GOVERNANCE  # Could be determined from policy content
+        )
+        
+        logger.info(f"ML Predictions computed: {ml_predictions}")
+        
+        # Augment response with ML predictions
+        valid_data["ml_predictions"] = ml_predictions
 
         logger.info("Data validated successfully. Returning response to frontend.")
         return PolicyResponse(**valid_data)

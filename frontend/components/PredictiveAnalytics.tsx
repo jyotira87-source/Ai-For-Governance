@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { Card } from "./Card";
+import { jsPDF } from "jspdf";
 
 interface PredictionMetrics {
   successProbability: number;
@@ -21,8 +22,7 @@ interface PredictionMetrics {
   };
 }
 
-function generatePredictions(score: number, friction: number): PredictionMetrics {
-  // ML-based heuristic model for predictions
+export function generatePredictions(score: number, friction: number): PredictionMetrics {
   const successProbability = Math.min(95, Math.max(20, score * 1.2 - friction * 0.5));
   const adoptionTimeline = Math.max(3, 24 - score / 5 + friction);
   const stakeholderSupport = Math.max(30, Math.min(95, score * 1.5 - friction * 0.8));
@@ -66,7 +66,6 @@ function generatePredictions(score: number, friction: number): PredictionMetrics
     }
   };
 }
-
 function TimelineVisualization({ timeline, phases }: { timeline: number; phases: any[] }) {
   return (
     <div className="space-y-4">
@@ -138,8 +137,24 @@ function ScenarioAnalysis({ scenarios }: { scenarios: { optimistic: number; real
   );
 }
 
+
 export function PredictiveAnalytics({ score, friction }: { score: number; friction: number }) {
   const predictions = useMemo(() => generatePredictions(score, friction), [score, friction]);
+
+  const downloadPdf = () => {
+    const doc = new jsPDF({ unit: "px", format: "a4" });
+    doc.setFontSize(16);
+    doc.text("PolisAI Predictive Report", 40, 40);
+    doc.setFontSize(11);
+    doc.text(`Success Probability: ${predictions.successProbability.toFixed(1)}%`, 40, 70);
+    doc.text(`Stakeholder Support: ${predictions.stakeholderSupport.toFixed(1)}%`, 40, 90);
+    doc.text(`Risk Trajectory: ${predictions.riskTrajectory > 0 ? "Improving" : "Declining"}`, 40, 110);
+    doc.text("Forecast:", 40, 140);
+    doc.text(`- Optimistic: ${predictions.forecastedOutcomes.optimistic.toFixed(1)}%`, 40, 160);
+    doc.text(`- Realistic: ${predictions.forecastedOutcomes.realistic.toFixed(1)}%`, 40, 180);
+    doc.text(`- Pessimistic: ${predictions.forecastedOutcomes.pessimistic.toFixed(1)}%`, 40, 200);
+    doc.save(`PolisAI_Predictive_Report_${Date.now()}.pdf`);
+  };
 
   return (
     <Card title="🔮 Predictive Analysis (Data Science)">
