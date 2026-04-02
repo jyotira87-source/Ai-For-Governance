@@ -1,7 +1,8 @@
-export function Spinner() {
+export function Spinner({ size }: { size?: "sm" | "md" | "lg" }) {
+  const sizeClass = size === "lg" ? "h-8 w-8" : size === "sm" ? "h-4 w-4" : "h-5 w-5";
   return (
     <div className="inline-flex items-center gap-3">
-      <div className="relative h-5 w-5">
+      <div className={`relative ${sizeClass}`}>
         <div className="absolute inset-0 rounded-full border border-white/20" />
         <div className="absolute inset-0 rounded-full border border-transparent border-t-accent/90 animate-spin" />
       </div>

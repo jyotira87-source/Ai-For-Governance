@@ -100,8 +100,9 @@ export default function SentimentPage() {
                 </>
               )}
             </button>
-          </div>
-        </Card>
+            </div>
+          </Card>
+        </div>
 
         {/* Results Section */}
         {sentimentData && (
