@@ -178,7 +178,14 @@ export default function HomePage() {
         setIsComparing(true);
       }
       setPolicy("");
-    } catch (e: any) { setError(e.message || "API Error"); } finally { setLoading(false); }
+    } catch (e: any) {
+      const errorMsg = e.message || "API Error - please try again";
+      setError(errorMsg);
+      console.error("Analysis error:", e);
+    } finally {
+      setLoading(false);
+    }
+
   }
 
  // --- UPGRADED GOV MEMO EXPORTER (Mac-Safe HTML) ---
@@ -298,13 +305,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex justify-between items-end">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
-              <h1 className="text-balance text-5xl font-semibold tracking-tight text-white md:text-7xl">PolisAI</h1>
-              <p className="mt-4 max-w-2xl text-pretty text-lg text-white/70 md:text-xl">Enterprise Policy Draft & Simulation Engine</p>
-              {user && <p className="mt-2 text-sm text-white/50">Logged in as <span className="text-accent">{user.username}</span></p>}
+              <h1 className="text-balance text-3xl md:text-5xl lg:text-7xl font-semibold tracking-tight text-white">PolisAI</h1>
+              <p className="mt-4 max-w-2xl text-pretty text-base md:text-lg lg:text-xl text-white/70">Enterprise Policy Draft & Simulation Engine</p>
+              {user && <p className="mt-2 text-xs md:text-sm text-white/50">Logged in as <span className="text-accent">{user.username}</span></p>}
             </div>
-            {v1Data && <button onClick={handleReset} className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-1 rounded-full backdrop-blur-md">Reset Workspace</button>}
+            {v1Data && <button onClick={handleReset} aria-label="Reset workspace" className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-2 rounded-full backdrop-blur-md hover:bg-white/5 transition focus:ring-2 focus:ring-white/20 focus:outline-none">Reset Workspace</button>}
           </div>
 
           {/* INPUT SECTION */}
@@ -318,12 +325,19 @@ export default function HomePage() {
                     </div>
                   </div>
                   <textarea
-                    value={policy} onChange={(e) => setPolicy(e.target.value)}
+                    value={policy}
+                    onChange={(e) => setPolicy(e.target.value)}
                     placeholder={v1Data ? "Paste revised policy..." : "Enter policy..."}
-                    className="mt-3 h-44 w-full resize-none rounded-2xl border border-white/10 bg-black/40 p-4 text-[15px] leading-relaxed text-white/90 outline-none ring-0 placeholder:text-white/30 focus:border-white/20 focus:bg-black/50"
+                    aria-label="Policy input text area"
+                    className="mt-3 h-44 w-full resize-none rounded-2xl border border-white/10 bg-black/40 p-4 text-[15px] leading-relaxed text-white/90 outline-none ring-0 placeholder:text-white/30 focus:border-white/20 focus:bg-black/50 focus:ring-2 focus:ring-white/20"
                   />
-                  <div className="mt-4 flex justify-between items-center">
-                    <button onClick={onAnalyze} disabled={!canAnalyze || loading} className="group relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-semibold text-white transition disabled:opacity-50 border border-white/10 bg-white/5 hover:bg-white/10">
+                  <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <button
+                      onClick={onAnalyze}
+                      disabled={!canAnalyze || loading}
+                      aria-label={loading ? "Analyzing policy" : "Analyze policy"}
+                      className="group relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-semibold text-white transition disabled:opacity-50 border border-white/10 bg-white/5 hover:bg-white/10 focus:ring-2 focus:ring-white/20 focus:outline-none w-full sm:w-auto"
+                    >
                       {loading ? "Simulating Constraints…" : v1Data ? "Compare with V1" : "Analyze Draft V1"}
                     </button>
                   </div>
