@@ -36,12 +36,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Attempting login with:", { email, API_URL });
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const apiUrl = `${API_URL}/auth/login`;
+      console.log("Attempting login to:", apiUrl);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errText = await res.text();
@@ -60,15 +68,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("polisai:token", data.access_token);
 
       // Fetch user info
-      const userRes = await fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${data.access_token}` }
-      });
-      const userData = await userRes.json();
-      setUser(userData);
-      localStorage.setItem("polisai:user", JSON.stringify(userData));
+      try {
+        const userRes = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+          signal: controller.signal
+        });
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setUser(userData);
+          localStorage.setItem("polisai:user", JSON.stringify(userData));
+        }
+      } catch (e) {
+        console.warn("Could not fetch user info:", e);
+        setUser({ email });
+      }
     } catch (e: any) {
       console.error("Auth error:", e.message);
-      setError(e.message);
+      // Provide helpful error messages
+      if (e.name === "AbortError") {
+        setError("Request timeout - backend server may be down");
+      } else if (e.message.includes("fetch")) {
+        setError("NetworkError - Cannot connect to backend. Check your internet and backend status.");
+      } else {
+        setError(e.message);
+      }
       throw e;
     } finally {
       setIsLoading(false);
@@ -79,12 +102,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Attempting registration with:", { email, username, API_URL });
-      const res = await fetch(`${API_URL}/auth/register`, {
+      const apiUrl = `${API_URL}/auth/register`;
+      console.log("Attempting registration to:", apiUrl);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password, full_name: fullName })
+        body: JSON.stringify({ email, username, password, full_name: fullName }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errText = await res.text();
@@ -102,7 +133,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await login(email, password);
     } catch (e: any) {
       console.error("Auth error:", e.message);
-      setError(e.message);
+      // Provide helpful error messages
+      if (e.name === "AbortError") {
+        setError("Request timeout - backend server may be down");
+      } else if (e.message.includes("fetch")) {
+        setError("NetworkError - Cannot connect to backend. Check your internet and backend status.");
+      } else {
+        setError(e.message);
+      }
       throw e;
     } finally {
       setIsLoading(false);
