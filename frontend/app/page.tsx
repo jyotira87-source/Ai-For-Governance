@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { Spinner } from "@/components/Spinner";
 import { RiskChart } from "@/components/RiskChart";
@@ -124,6 +126,8 @@ export default function HomePage() {
   const [policy, setPolicy] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { token, user, logout } = useAuth();
+  const router = useRouter();
   
   // A/B State & X-Ray
   const [v1Data, setV1Data] = useState<any>(null);
@@ -137,12 +141,16 @@ export default function HomePage() {
 
   useEffect(() => {
     setIsMounted(true);
+    // Redirect to auth if not logged in
+    if (!token) {
+      router.push("/auth");
+    }
     const stored = window.localStorage.getItem("polisai:theme");
     const nextTheme = stored === "crimson" || stored === "midnight" || stored === "carbon" ? stored : "carbon";
     setTheme(nextTheme);
     document.documentElement.classList.remove("theme-carbon", "theme-crimson", "theme-midnight");
     document.documentElement.classList.add(`theme-${nextTheme}`);
-  }, []);
+  }, [token, router]);
 
   const canAnalyze = useMemo(() => policy.trim().length >= 40, [policy]);
 
@@ -280,16 +288,28 @@ export default function HomePage() {
         
         {/* HERO SECTION */}
         <section className="relative no-print">
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            <Pill color="accent">GovTech v4</Pill>
-            <Pill color="purple">X-Ray Analysis</Pill>
-            <Pill color="red">A/B Diff Engine</Pill>
+          <div className="flex justify-between items-start mb-8">
+            <div className="mb-6 flex flex-wrap items-center gap-2">
+              <Pill color="accent">GovTech v4</Pill>
+              <Pill color="purple">X-Ray Analysis</Pill>
+              <Pill color="red">A/B Diff Engine</Pill>
+            </div>
+            <button
+              onClick={() => {
+                logout();
+                router.push("/auth");
+              }}
+              className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-1 rounded-full backdrop-blur-md transition"
+            >
+              Logout
+            </button>
           </div>
 
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-balance text-5xl font-semibold tracking-tight text-white md:text-7xl">PolisAI</h1>
               <p className="mt-4 max-w-2xl text-pretty text-lg text-white/70 md:text-xl">Enterprise Policy Draft & Simulation Engine</p>
+              {user && <p className="mt-2 text-sm text-white/50">Logged in as <span className="text-accent">{user.username}</span></p>}
             </div>
             {v1Data && <button onClick={handleReset} className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-1 rounded-full backdrop-blur-md">Reset Workspace</button>}
           </div>

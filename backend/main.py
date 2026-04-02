@@ -2,12 +2,23 @@ import os
 import json
 import re
 import logging
-from typing import List, Any
+from typing import List, Any, Optional
+from datetime import timedelta
 from dotenv import load_dotenv
 from openai import OpenAI
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthCredentials
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+# Database and Auth imports
+from database import get_db, User, PolicyAnalysis, SentimentHistory
+from auth import (
+    hash_password, verify_password, create_access_token, 
+    verify_token, UserCreate, UserLogin, Token, UserResponse,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 # 1. Advanced Setup: Configure Professional Logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -76,6 +87,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security
+security = HTTPBearer()
+
+# Dependency to get current user
+async def get_current_user(credentials: HTTPAuthCredentials = Depends(security), db: Session = Depends(get_db)) -> User:
+    token = credentials.credentials
+    token_data = verify_token(token)
+    if token_data is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    user = db.query(User).filter(User.id == token_data.user_id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user
 
 # --- ADVANCED HELPER FUNCTIONS ---
 
@@ -253,6 +278,60 @@ async def analyze_sentiment(payload: PolicyRequest):
             languages={"english": 70, "hindi": 20, "others": 10},
             last_updated="2026-04-02T12:00:00Z"
         )
+
+# --- AUTHENTICATION ENDPOINTS ---
+
+@app.post("/auth/register", response_model=UserResponse)
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user"""
+    # Check if user already exists
+    existing_user = db.query(User).filter(
+        (User.email == user_data.email) | (User.username == user_data.username)
+    ).first()
+    
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email or username already registered")
+    
+    # Create new user
+    hashed_pwd = hash_password(user_data.password)
+    db_user = User(
+        email=user_data.email,
+        username=user_data.username,
+        hashed_password=hashed_pwd,
+        full_name=user_data.full_name
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    
+    logger.info(f"New user registered: {user_data.email}")
+    return db_user
+
+@app.post("/auth/login", response_model=Token)
+async def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    """Login user and return JWT token"""
+    user = db.query(User).filter(User.email == user_data.email).first()
+    
+    if not user or not verify_password(user_data.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+    
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User account is inactive")
+    
+    # Create tokens
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "user_id": user.id},
+        expires_delta=access_token_expires
+    )
+    
+    logger.info(f"User logged in: {user.email}")
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/auth/me", response_model=UserResponse)
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current user info"""
+    return current_user
 
 @app.get("/health")
 async def health():
