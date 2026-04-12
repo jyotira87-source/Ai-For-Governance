@@ -4,6 +4,7 @@ set -euo pipefail
 OWNER="jyotira87-source"
 REPO="Ai-For-Governance"
 API="https://api.github.com/repos/${OWNER}/${REPO}"
+REPO_DESCRIPTION="AI-powered governance policy analysis platform with constitutional risk checks, sentiment insights, and predictive implementation analytics."
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   echo "❌ GITHUB_TOKEN is not set."
@@ -47,6 +48,11 @@ create_label "help wanted" "008672" "Maintainers welcome community help"
 create_label "documentation" "0e8a16" "Docs and contribution docs updates"
 create_label "frontend" "1d76db" "Next.js / UI / UX changes"
 create_label "backend" "d93f0b" "FastAPI / API / data-model changes"
+
+echo "🚀 Updating repository description..."
+curl -s -X PATCH "${auth_header[@]}" "${API}" \
+  -d "{\"description\":$(jq -Rn --arg v "$REPO_DESCRIPTION" '$v')}" >/dev/null
+echo "✅ Repository description updated"
 
 echo "🚀 Creating starter issues..."
 
