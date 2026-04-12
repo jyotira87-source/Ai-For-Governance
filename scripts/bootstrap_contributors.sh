@@ -142,9 +142,8 @@ echo "✅ Repository description updated"
 
 echo "🚀 Creating starter issues..."
 
-create_issue \
-  "Improve Auth page UX consistency with new glass theme" \
-"## Goal
+issue_1_body=$(cat <<'EOF'
+## Goal
 Align `/frontend/app/auth/page.tsx` visuals with the new dashboard/history styles.
 
 ## Scope
@@ -158,12 +157,13 @@ Align `/frontend/app/auth/page.tsx` visuals with the new dashboard/history style
 - [ ] `npm run build` passes in `frontend/`
 
 ## Notes
-Keep changes focused on UI only." \
-"[\"good first issue\",\"help wanted\",\"frontend\"]"
+Keep changes focused on UI only.
+EOF
+)
+create_issue "Improve Auth page UX consistency with new glass theme" "$issue_1_body" '["good first issue","help wanted","frontend"]'
 
-create_issue \
-  "Add empty-state illustrations and microcopy to Sentiment page" \
-"## Goal
+issue_2_body=$(cat <<'EOF'
+## Goal
 Improve first-time user experience on `/frontend/app/sentiment/page.tsx`.
 
 ## Scope
@@ -177,12 +177,13 @@ Improve first-time user experience on `/frontend/app/sentiment/page.tsx`.
 - [ ] Lint/build pass in frontend
 
 ## Notes
-No backend changes needed." \
-"[\"good first issue\",\"help wanted\",\"frontend\"]"
+No backend changes needed.
+EOF
+)
+create_issue "Add empty-state illustrations and microcopy to Sentiment page" "$issue_2_body" '["good first issue","help wanted","frontend"]'
 
-create_issue \
-  "Add backend `/history` endpoint for persisted analysis records" \
-"## Goal
+issue_3_body=$(cat <<'EOF'
+## Goal
 Expose analysis history from backend so frontend can replace placeholder data.
 
 ## Scope
@@ -197,12 +198,13 @@ Expose analysis history from backend so frontend can replace placeholder data.
 - [ ] Existing endpoints continue working
 
 ## Notes
-Coordinate expected response shape with frontend history page." \
-"[\"help wanted\",\"backend\"]"
+Coordinate expected response shape with frontend history page.
+EOF
+)
+create_issue "Add backend /history endpoint for persisted analysis records" "$issue_3_body" '["help wanted","backend"]'
 
-create_issue \
-  "Document local development troubleshooting guide" \
-"## Goal
+issue_4_body=$(cat <<'EOF'
+## Goal
 Expand docs for common setup and runtime issues.
 
 ## Scope
@@ -216,12 +218,13 @@ Expand docs for common setup and runtime issues.
 - [ ] Docs links remain valid
 
 ## Notes
-Keep it concise and beginner-friendly." \
-"[\"good first issue\",\"documentation\"]"
+Keep it concise and beginner-friendly.
+EOF
+)
+create_issue "Document local development troubleshooting guide" "$issue_4_body" '["good first issue","documentation"]'
 
-create_issue \
-  "Add unit tests for `QuickActions` interaction behavior" \
-"## Goal
+issue_5_body=$(cat <<'EOF'
+## Goal
 Increase frontend test coverage for navigation action cards.
 
 ## Scope
@@ -235,7 +238,9 @@ Increase frontend test coverage for navigation action cards.
 - [ ] No behavior regression in component API
 
 ## Notes
-Use existing test setup (Jest + RTL)." \
-"[\"good first issue\",\"help wanted\",\"frontend\"]"
+Use existing test setup (Jest + RTL).
+EOF
+)
+create_issue "Add unit tests for QuickActions interaction behavior" "$issue_5_body" '["good first issue","help wanted","frontend"]'
 
 echo "🎉 Done. Labels and starter issues created."
