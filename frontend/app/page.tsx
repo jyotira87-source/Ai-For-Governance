@@ -28,6 +28,16 @@ function Pill({ children, color = "accent" }: { children: string; color?: "accen
   );
 }
 
+function HeroStat({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <div className="glass rounded-2xl border border-white/8 bg-white/5 p-4 shadow-soft">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/45">{label}</p>
+      <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
+      <p className="mt-1 text-xs leading-relaxed text-white/55">{hint}</p>
+    </div>
+  );
+}
+
 // --- 2. BIAS MATRIX COMPONENT ---
 function BiasMatrix({ data }: { data: any }) {
   if (!data) return <div className="text-white/50 text-sm">Awaiting simulation data...</div>;
@@ -292,54 +302,133 @@ export default function HomePage() {
     <main className="relative isolate min-h-screen overflow-hidden bg-background">
       <div className="noise absolute inset-0 -z-10" />
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(1200px_circle_at_20%_10%,rgba(225,6,0,0.12),transparent_55%),radial-gradient(900px_circle_at_80%_15%,rgba(255,255,255,0.06),transparent_55%),linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent_35%),linear-gradient(135deg,#0A0A0A,#111111_55%,#0A0A0A)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(circle_at_top,rgba(225,6,0,0.18),transparent_58%)] blur-3xl" />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col px-6 pb-24 pt-16 md:pt-24 print-page print-bg-white">
         
         {/* HERO SECTION */}
         <section className="relative no-print">
-          <div className="flex justify-between items-start mb-8">
-            <div className="mb-6 flex flex-wrap items-center gap-2">
-              <Pill color="accent">GovTech v4</Pill>
-              <Pill color="purple">X-Ray Analysis</Pill>
-              <Pill color="red">A/B Diff Engine</Pill>
+          <div className="mb-8 flex flex-wrap items-center gap-2">
+            <Pill color="accent">GovTech v4</Pill>
+            <Pill color="purple">X-Ray Analysis</Pill>
+            <Pill color="red">A/B Diff Engine</Pill>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <h1 className="text-balance text-4xl font-semibold tracking-tight text-white md:text-6xl lg:text-7xl">
+                  PolisAI
+                </h1>
+                <p className="max-w-2xl text-pretty text-base leading-7 text-white/72 md:text-lg lg:text-xl">
+                  A polished policy intelligence workspace for drafting, simulating, and comparing proposals with clearer risk signals and faster decision-making.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.24em] text-white/45">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Policy Drafting</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Risk X-Ray</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Public Sentiment</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Predictive Forecasts</span>
+              </div>
+              {user && (
+                <p className="text-sm text-white/50">
+                  Logged in as <span className="text-accent">{user.username}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <HeroStat
+                label="Workspace"
+                value={v1Data ? (isComparing ? "Comparison" : "Draft Review") : "Ready"}
+                hint={v1Data ? "Use reset to start a fresh policy flow." : "Paste a draft to unlock insight cards."}
+              />
+              <HeroStat
+                label="Draft Depth"
+                value={`${policy.trim().length.toString().padStart(3, "0")} chars`}
+                hint="Longer briefs improve scoring, risk detection, and recommendations."
+              />
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div>
-              <h1 className="text-balance text-3xl md:text-5xl lg:text-7xl font-semibold tracking-tight text-white">PolisAI</h1>
-              <p className="mt-4 max-w-2xl text-pretty text-base md:text-lg lg:text-xl text-white/70">Enterprise Policy Draft & Simulation Engine</p>
-              {user && <p className="mt-2 text-xs md:text-sm text-white/50">Logged in as <span className="text-accent">{user.username}</span></p>}
+          {v1Data && (
+            <div className="mt-6 flex justify-end">
+              <button onClick={handleReset} aria-label="Reset workspace" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/55 transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-white/20">
+                Reset Workspace
+              </button>
             </div>
-            {v1Data && <button onClick={handleReset} aria-label="Reset workspace" className="text-xs text-white/40 hover:text-red-400 border border-white/10 px-3 py-2 rounded-full backdrop-blur-md hover:bg-white/5 transition focus:ring-2 focus:ring-white/20 focus:outline-none">Reset Workspace</button>}
-          </div>
+          )}
 
           {/* INPUT SECTION */}
           {!isComparing && (
-            <div className="mt-10 grid gap-6">
-              <div className="glass relative overflow-hidden rounded-3xl p-5 shadow-soft backdrop-blur-[14px]">
-                <div className="relative">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="text-sm font-semibold tracking-[0.18em] text-white/75 uppercase">
-                      {v1Data ? "Step 2: Initialize Draft V2 (Refinement)" : "Step 1: Paste Policy Draft"}
+            <div className="mt-10 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+              <div className="glass relative overflow-hidden rounded-[2rem] p-6 shadow-soft backdrop-blur-[14px]">
+                <div className="relative space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-semibold tracking-[0.28em] text-white/40 uppercase">
+                        {v1Data ? "Step 2 — Refine Draft" : "Step 1 — Draft Intake"}
+                      </div>
+                      <p className="mt-2 text-sm text-white/55">
+                        {v1Data ? "Paste the updated version to compare outcome shifts and risk deltas." : "Paste a policy draft to generate scoring, risks, and a predictive analysis."}
+                      </p>
+                    </div>
+                    <div className="rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/55">
+                      {policy.trim().length} characters
                     </div>
                   </div>
+
                   <textarea
                     value={policy}
                     onChange={(e) => setPolicy(e.target.value)}
                     placeholder={v1Data ? "Paste revised policy..." : "Enter policy..."}
                     aria-label="Policy input text area"
-                    className="mt-3 h-44 w-full resize-none rounded-2xl border border-white/10 bg-black/40 p-4 text-[15px] leading-relaxed text-white/90 outline-none ring-0 placeholder:text-white/30 focus:border-white/20 focus:bg-black/50 focus:ring-2 focus:ring-white/20"
+                    className="min-h-52 w-full resize-none rounded-[1.5rem] border border-white/10 bg-black/45 p-5 text-[15px] leading-7 text-white/92 outline-none placeholder:text-white/25 transition focus:border-white/20 focus:bg-black/55 focus:ring-2 focus:ring-white/15"
                   />
-                  <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.24em] text-white/42">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Legal Risks</span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Bias Matrix</span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2">Rollout Cost</span>
+                    </div>
                     <button
                       onClick={onAnalyze}
                       disabled={!canAnalyze || loading}
                       aria-label={loading ? "Analyzing policy" : "Analyze policy"}
-                      className="group relative overflow-hidden rounded-2xl px-6 py-3 text-sm font-semibold text-white transition disabled:opacity-50 border border-white/10 bg-white/5 hover:bg-white/10 focus:ring-2 focus:ring-white/20 focus:outline-none w-full sm:w-auto"
+                      className="group inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-gradient-to-r from-white/10 to-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:from-white/15 hover:to-white/10 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/20"
                     >
-                      {loading ? "Simulating Constraints…" : v1Data ? "Compare with V1" : "Analyze Draft V1"}
+                      {loading ? <Spinner size="sm" /> : <span>{v1Data ? "Compare with V1" : "Analyze Draft V1"}</span>}
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass rounded-[2rem] border border-white/10 p-6 shadow-soft">
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.28em] text-white/40">How it works</div>
+                    <h2 className="mt-2 text-xl font-semibold text-white">Cleaner drafts, faster insight</h2>
+                    <p className="mt-2 text-sm leading-6 text-white/55">
+                      The editor is optimized for long policy text, clearer actions, and faster readability across desktop and tablet layouts.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      ["1", "Paste the draft", "Add a policy, memo, or proposal for analysis."],
+                      ["2", "Review signals", "Check risks, sentiment, and regional readiness."],
+                      ["3", "Export & compare", "Generate a memo or compare with a second draft."],
+                    ].map(([step, title, desc]) => (
+                      <div key={step} className="flex gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent">
+                          {step}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-white">{title}</div>
+                          <div className="mt-1 text-xs leading-5 text-white/50">{desc}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

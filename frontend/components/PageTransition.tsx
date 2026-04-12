@@ -18,7 +18,7 @@ export function PageTransition({ children }: PageTransitionProps) {
   }, [pathname]);
 
   return (
-    <div className={`transition-all duration-300 ${isLoading ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}>
+    <div className={`transform-gpu transition-all duration-500 ease-out ${isLoading ? 'translate-y-3 opacity-0 blur-[1px]' : 'translate-y-0 opacity-100 blur-0'}`}>
       {children}
     </div>
   );
