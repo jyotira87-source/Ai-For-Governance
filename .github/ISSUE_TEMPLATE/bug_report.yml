@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a reproducible bug in PolisAI
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill the details below so we can reproduce quickly.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Bug summary
+      placeholder: Short, clear description
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include exact steps and sample input
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: input
+    id: frontend_version
+    attributes:
+      label: Frontend environment
+      placeholder: macOS 14, Node 20, npm 10
+
+  - type: input
+    id: backend_version
+    attributes:
+      label: Backend environment
+      placeholder: Python 3.11, FastAPI local dev
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste errors, stack traces, screenshots
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues first
+          required: true
+        - label: I can reproduce this on the latest main
+          required: true
