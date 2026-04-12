@@ -36,25 +36,48 @@ api_call() {
   local method="$1"
   local url="$2"
   local data="${3:-}"
-  local body_file
-  body_file="$(mktemp)"
+  local max_attempts=5
+  local attempt=1
 
-  local status
-  if [[ -n "$data" ]]; then
-    status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url" -d "$data")
-  else
-    status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url")
-  fi
+  while [[ "$attempt" -le "$max_attempts" ]]; do
+    local body_file
+    body_file="$(mktemp)"
 
-  if [[ "$status" -lt 200 || "$status" -ge 300 ]]; then
+    local status
+    local curl_exit=0
+    if [[ -n "$data" ]]; then
+      status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url" -d "$data") || curl_exit=$?
+    else
+      status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url") || curl_exit=$?
+    fi
+
+    if [[ "$curl_exit" -eq 0 && "$status" -ge 200 && "$status" -lt 300 ]]; then
+      cat "$body_file"
+      rm -f "$body_file"
+      return 0
+    fi
+
+    local retryable="false"
+    if [[ "$curl_exit" -ne 0 || "$status" == "000" ]]; then
+      retryable="true"
+    elif [[ "$status" -ge 500 && "$status" -lt 600 ]]; then
+      retryable="true"
+    fi
+
+    if [[ "$retryable" == "true" && "$attempt" -lt "$max_attempts" ]]; then
+      local wait_seconds=$((attempt * 2))
+      echo "⚠️  Transient API/network issue (curl=${curl_exit}, status=${status}) on ${method} ${url}. Retrying in ${wait_seconds}s..." >&2
+      rm -f "$body_file"
+      sleep "$wait_seconds"
+      attempt=$((attempt + 1))
+      continue
+    fi
+
     echo "❌ GitHub API error (${status}) for ${method} ${url}" >&2
     cat "$body_file" >&2
     rm -f "$body_file"
     return 1
-  fi
-
-  cat "$body_file"
-  rm -f "$body_file"
+  done
 }
 
 validate_auth() {
@@ -117,12 +140,24 @@ PY
 )
 
   local response
-  response=$(api_call POST "${API}/issues" "$payload")
+  if ! response=$(api_call POST "${API}/issues" "$payload"); then
+    echo "❌ Failed to create issue: ${title}" >&2
+    return 1
+  fi
   python3 - <<'PY' "$response"
 import json, sys
 data = json.loads(sys.argv[1])
 print(f"✅ Created issue: {data.get('html_url', 'unknown-url')}")
 PY
+}
+
+safe_create_issue() {
+  local title="$1"
+  local body="$2"
+  local labels_json="$3"
+  if ! create_issue "$title" "$body" "$labels_json"; then
+    echo "⚠️  Skipping and continuing: ${title}" >&2
+  fi
 }
 
 command -v python3 >/dev/null || { echo "❌ python3 is required."; exit 1; }
@@ -160,7 +195,7 @@ Align `/frontend/app/auth/page.tsx` visuals with the new dashboard/history style
 Keep changes focused on UI only.
 EOF
 )
-create_issue "Improve Auth page UX consistency with new glass theme" "$issue_1_body" '["good first issue","help wanted","frontend"]'
+safe_create_issue "Improve Auth page UX consistency with new glass theme" "$issue_1_body" '["good first issue","help wanted","frontend"]'
 
 issue_2_body=$(cat <<'EOF'
 ## Goal
@@ -180,7 +215,7 @@ Improve first-time user experience on `/frontend/app/sentiment/page.tsx`.
 No backend changes needed.
 EOF
 )
-create_issue "Add empty-state illustrations and microcopy to Sentiment page" "$issue_2_body" '["good first issue","help wanted","frontend"]'
+safe_create_issue "Add empty-state illustrations and microcopy to Sentiment page" "$issue_2_body" '["good first issue","help wanted","frontend"]'
 
 issue_3_body=$(cat <<'EOF'
 ## Goal
@@ -201,7 +236,7 @@ Expose analysis history from backend so frontend can replace placeholder data.
 Coordinate expected response shape with frontend history page.
 EOF
 )
-create_issue "Add backend /history endpoint for persisted analysis records" "$issue_3_body" '["help wanted","backend"]'
+safe_create_issue "Add backend /history endpoint for persisted analysis records" "$issue_3_body" '["help wanted","backend"]'
 
 issue_4_body=$(cat <<'EOF'
 ## Goal
@@ -221,7 +256,7 @@ Expand docs for common setup and runtime issues.
 Keep it concise and beginner-friendly.
 EOF
 )
-create_issue "Document local development troubleshooting guide" "$issue_4_body" '["good first issue","documentation"]'
+safe_create_issue "Document local development troubleshooting guide" "$issue_4_body" '["good first issue","documentation"]'
 
 issue_5_body=$(cat <<'EOF'
 ## Goal
@@ -241,6 +276,6 @@ Increase frontend test coverage for navigation action cards.
 Use existing test setup (Jest + RTL).
 EOF
 )
-create_issue "Add unit tests for QuickActions interaction behavior" "$issue_5_body" '["good first issue","help wanted","frontend"]'
+safe_create_issue "Add unit tests for QuickActions interaction behavior" "$issue_5_body" '["good first issue","help wanted","frontend"]'
 
 echo "🎉 Done. Labels and starter issues created."
