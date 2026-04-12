@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1776001819308" clover="3.2.0">
+  <project timestamp="1776001819308" name="All files">
+    <metrics statements="34" coveredstatements="11" conditionals="37" coveredconditionals="13" methods="10" coveredmethods="1" elements="81" coveredelements="25" complexity="0" loc="34" ncloc="34" packages="1" files="2" classes="2"/>
+    <file name="Card.tsx" path="/home/runner/work/Ai-For-Governance/Ai-For-Governance/frontend/components/Card.tsx">
+      <metrics statements="3" coveredstatements="1" conditionals="3" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="12" count="0" type="stmt"/>
+      <line num="14" count="0" type="stmt"/>
+    </file>
+    <file name="PredictiveAnalytics.tsx" path="/home/runner/work/Ai-For-Governance/Ai-For-Governance/frontend/components/PredictiveAnalytics.tsx">
+      <metrics statements="31" coveredstatements="10" conditionals="34" coveredconditionals="13" methods="9" coveredmethods="1"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="25" count="1" type="stmt"/>
+      <line num="26" count="30" type="stmt"/>
+      <line num="27" count="30" type="stmt"/>
+      <line num="28" count="30" type="stmt"/>
+      <line num="29" count="30" type="cond" truecount="4" falsecount="0"/>
+      <line num="31" count="30" type="stmt"/>
+      <line num="70" count="0" type="stmt"/>
+      <line num="78" count="0" type="stmt"/>
+      <line num="111" count="0" type="stmt"/>
+      <line num="113" count="0" type="stmt"/>
+      <line num="122" count="0" type="stmt"/>
+      <line num="141" count="1" type="stmt"/>
+      <line num="142" count="0" type="stmt"/>
+      <line num="144" count="0" type="stmt"/>
+      <line num="145" count="0" type="stmt"/>
+      <line num="146" count="0" type="stmt"/>
+      <line num="147" count="0" type="stmt"/>
+      <line num="148" count="0" type="stmt"/>
+      <line num="149" count="0" type="stmt"/>
+      <line num="150" count="0" type="stmt"/>
+      <line num="151" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="152" count="0" type="stmt"/>
+      <line num="153" count="0" type="stmt"/>
+      <line num="154" count="0" type="stmt"/>
+      <line num="155" count="0" type="stmt"/>
+      <line num="156" count="0" type="stmt"/>
+      <line num="159" count="0" type="stmt"/>
+      <line num="235" count="0" type="stmt"/>
+    </file>
+  </project>
+</coverage>
