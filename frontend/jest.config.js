@@ -1,6 +1,7 @@
 module.exports = {
   roots: ['<rootDir>'],
-  testMatch: ['<rootDir>/**/?(*.)+(spec|test).{ts,tsx}'],
+  testMatch: ['<rootDir>/__tests__/**/?(*.)+(spec|test).{ts,tsx}'],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/tests/'],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
@@ -12,7 +13,8 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^jspdf$': '<rootDir>/__mocks__/jspdf.js'
   },
   testEnvironment: 'jsdom'
 };
