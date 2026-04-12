@@ -36,7 +36,7 @@ describe("Breadcrumb", () => {
     expect(screen.getByText("Login")).toBeInTheDocument();
   });
 
-  it("capitalises the first letter of each segment", () => {
+  it("capitalizes the first letter of each segment", () => {
     mockUsePathname.mockReturnValue("/sentiment");
     render(<Breadcrumb />);
     expect(screen.getByText("Sentiment")).toBeInTheDocument();
