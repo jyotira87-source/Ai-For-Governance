@@ -23,6 +23,15 @@ print(json.dumps(sys.argv[1]))
 PY
 }
 
+url_encode() {
+  local value="$1"
+  python3 - <<'PY' "$value"
+import sys
+from urllib.parse import quote
+print(quote(sys.argv[1], safe=''))
+PY
+}
+
 api_call() {
   local method="$1"
   local url="$2"
@@ -63,16 +72,33 @@ create_label() {
   local name="$1"
   local color="$2"
   local description="$3"
+  local encoded_name
+  encoded_name="$(url_encode "$name")"
 
-  if curl -sS "${auth_header[@]}" "${API}/labels/${name}" | grep -q '"name"'; then
+  if curl -sS "${auth_header[@]}" "${API}/labels/${encoded_name}" | grep -q '"name"'; then
     echo "ℹ️  Label exists: ${name}"
     return
   fi
 
   local payload
   payload="{\"name\":$(json_escape "$name"),\"color\":$(json_escape "$color"),\"description\":$(json_escape "$description")}"
-  api_call POST "${API}/labels" "$payload" >/dev/null
-  echo "✅ Created label: ${name}"
+  local body_file
+  body_file="$(mktemp)"
+  local status
+  status=$(curl -sS -o "$body_file" -w "%{http_code}" -X POST "${auth_header[@]}" "${API}/labels" -d "$payload")
+
+  if [[ "$status" -ge 200 && "$status" -lt 300 ]]; then
+    echo "✅ Created label: ${name}"
+  elif [[ "$status" == "422" ]] && grep -q '"already_exists"' "$body_file"; then
+    echo "ℹ️  Label exists: ${name}"
+  else
+    echo "❌ GitHub API error (${status}) for POST ${API}/labels" >&2
+    cat "$body_file" >&2
+    rm -f "$body_file"
+    return 1
+  fi
+
+  rm -f "$body_file"
 }
 
 create_issue() {
