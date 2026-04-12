@@ -52,7 +52,7 @@ export function NavigationHeader() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-black/80 backdrop-blur-md border-b border-white/10"
+            ? "bg-black/82 backdrop-blur-md border-b border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
             : "bg-transparent"
         }`}
       >
@@ -61,7 +61,7 @@ export function NavigationHeader() {
             {/* Logo and Brand */}
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 bg-gradient-to-br from-accent to-red-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-red-500 transition-transform group-hover:scale-110">
                   <span className="text-white font-bold text-sm">P</span>
                 </div>
                 <span className="text-xl font-bold text-white group-hover:text-accent transition-colors">
@@ -83,7 +83,7 @@ export function NavigationHeader() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-2 ${
+                  className={`flex items-center space-x-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
                     pathname === item.href
                       ? "bg-accent/20 text-accent border border-accent/30"
                       : "text-white/70 hover:text-white hover:bg-white/5"
@@ -110,7 +110,7 @@ export function NavigationHeader() {
                   <button
                     onClick={handleLogout}
                     aria-label="Logout from account"
-                    className="px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition font-medium text-sm focus:ring-2 focus:ring-red-400/50 focus:outline-none"
+                    className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-red-400/50"
                   >
                     Logout
                   </button>
@@ -135,7 +135,7 @@ export function NavigationHeader() {
               {/* Mobile menu button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition"
+                className="rounded-lg p-2 text-white/70 transition hover:bg-white/5 hover:text-white md:hidden"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
