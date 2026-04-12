@@ -15,18 +15,63 @@ fi
 
 auth_header=( -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Accept: application/vnd.github+json" )
 
+json_escape() {
+  local value="$1"
+  python3 - <<'PY' "$value"
+import json, sys
+print(json.dumps(sys.argv[1]))
+PY
+}
+
+api_call() {
+  local method="$1"
+  local url="$2"
+  local data="${3:-}"
+  local body_file
+  body_file="$(mktemp)"
+
+  local status
+  if [[ -n "$data" ]]; then
+    status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url" -d "$data")
+  else
+    status=$(curl -sS -o "$body_file" -w "%{http_code}" -X "$method" "${auth_header[@]}" "$url")
+  fi
+
+  if [[ "$status" -lt 200 || "$status" -ge 300 ]]; then
+    echo "❌ GitHub API error (${status}) for ${method} ${url}" >&2
+    cat "$body_file" >&2
+    rm -f "$body_file"
+    return 1
+  fi
+
+  cat "$body_file"
+  rm -f "$body_file"
+}
+
+validate_auth() {
+  local resp
+  resp=$(api_call GET "$API")
+  if ! echo "$resp" | grep -q '"full_name"'; then
+    echo "❌ Unable to verify repo access for ${OWNER}/${REPO}." >&2
+    echo "$resp" >&2
+    exit 1
+  fi
+  echo "✅ GitHub token and repo access verified"
+}
+
 create_label() {
   local name="$1"
   local color="$2"
   local description="$3"
 
-  if curl -s "${auth_header[@]}" "${API}/labels/${name}" | grep -q '"name"'; then
+  if curl -sS "${auth_header[@]}" "${API}/labels/${name}" | grep -q '"name"'; then
     echo "ℹ️  Label exists: ${name}"
     return
   fi
 
-  curl -s -X POST "${auth_header[@]}" "${API}/labels" \
-    -d "{\"name\":\"${name}\",\"color\":\"${color}\",\"description\":\"${description}\"}" >/dev/null
+  local payload
+  payload="{\"name\":$(json_escape "$name"),\"color\":$(json_escape "$color"),\"description\":$(json_escape "$description")}"
+  api_call POST "${API}/labels" "$payload" >/dev/null
   echo "✅ Created label: ${name}"
 }
 
@@ -35,12 +80,28 @@ create_issue() {
   local body="$2"
   local labels_json="$3"
 
-  curl -s -X POST "${auth_header[@]}" "${API}/issues" \
-    -d "{\"title\":$(jq -Rn --arg v "$title" '$v'),\"body\":$(jq -Rn --arg v "$body" '$v'),\"labels\":${labels_json}}" \
-    | jq -r '"✅ Created issue: \(.html_url)"'
+  local payload
+  payload=$(python3 - <<'PY' "$title" "$body" "$labels_json"
+import json, sys
+title = sys.argv[1]
+body = sys.argv[2]
+labels = json.loads(sys.argv[3])
+print(json.dumps({"title": title, "body": body, "labels": labels}))
+PY
+)
+
+  local response
+  response=$(api_call POST "${API}/issues" "$payload")
+  python3 - <<'PY' "$response"
+import json, sys
+data = json.loads(sys.argv[1])
+print(f"✅ Created issue: {data.get('html_url', 'unknown-url')}")
+PY
 }
 
-command -v jq >/dev/null || { echo "❌ jq is required. Install with: brew install jq"; exit 1; }
+command -v python3 >/dev/null || { echo "❌ python3 is required."; exit 1; }
+
+validate_auth
 
 echo "🚀 Creating labels..."
 create_label "good first issue" "7057ff" "Great for first-time contributors"
@@ -50,8 +111,7 @@ create_label "frontend" "1d76db" "Next.js / UI / UX changes"
 create_label "backend" "d93f0b" "FastAPI / API / data-model changes"
 
 echo "🚀 Updating repository description..."
-curl -s -X PATCH "${auth_header[@]}" "${API}" \
-  -d "{\"description\":$(jq -Rn --arg v "$REPO_DESCRIPTION" '$v')}" >/dev/null
+api_call PATCH "${API}" "{\"description\":$(json_escape "$REPO_DESCRIPTION")}" >/dev/null
 echo "✅ Repository description updated"
 
 echo "🚀 Creating starter issues..."
